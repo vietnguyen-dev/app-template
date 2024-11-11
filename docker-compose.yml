@@ -1,0 +1,37 @@
+services:
+  # app service (Vite React)
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"  # Exposing port 3000 for the app
+    environment:
+      - VITE_API_URL=${VITE_API_URL} # Connects to the server service at /server
+    depends_on:
+      - server
+    volumes:
+      - ./app:/app
+    networks:
+      - app-network
+  
+  # server service (Node Express)
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # Exposing port 8080 for the server
+    environment:
+      - PORT=8080
+    volumes:
+      - ./server:/server
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+ 
+ 
+ 

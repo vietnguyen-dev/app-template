@@ -4,8 +4,9 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+    #port # on computer is interacting with port # in container
     ports:
-      - "80:80"  # Exposing port 3000 for the app
+      - "${APP_PORT}:${APP_PORT}"  
     environment:
       - VITE_API_URL=${VITE_API_URL} # Connects to the server service at /server
     depends_on:
@@ -18,20 +19,35 @@ services:
   # server service (Node Express)
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+     context: ./server
+     dockerfile: Dockerfile
     ports:
-      - "8080:8080"  # Exposing port 8080 for the server
+      - "${PORT}:${PORT}"  # Exposing port 8080 for the server
     environment:
-      - PORT=8080
+      - PORT=${PORT}
     volumes:
       - ./server:/server
     networks:
       - app-network
 
+  # Use the official Postgres image
+  db:
+    image: postgres:13  
+    environment:
+      POSTGRES_USER: "${PG_USER}"      # Username for the DB
+      POSTGRES_PASSWORD: "${PG_PASS}"  # Password for the DB
+      POSTGRES_DB: "${PG_DB}"    # Database name to create
+    volumes:
+      - pg_data:/var/lib/postgresql/data  # Volume for persisting DB data
+      - ./dbo:/docker-entrypoint-initdb.d 
+    networks:
+      - app-network
+    ports:
+      - "${PG_PORT}:${PG_PORT}" # Expose the PostgreSQL port
+
 networks:
   app-network:
     driver: bridge
- 
- 
- 
+
+volumes:
+  pg_data:  # Named volume to persist PostgreSQL data

@@ -1,20 +1,18 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application } from "express";
 import dotenv from 'dotenv'
 import cors from 'cors'
 
+import stuffRouter from "./middleware/data/stuff";
+
 dotenv.config()
 const app: Application = express();
-
-app.use(cors())
 const port = process.env.PORT;
 
-app.get("/", (req: Request, res: Response) => {
-	res.json({stuff: "bt info hereeeeeeeee"});
-});
+app.use(cors())
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.get("/hello", (req: Request, res: Response) => {
-	res.send("get info here!");
-});
+app.use("/", stuffRouter);
 
 app.listen(port, () => {
 	console.log(`Server running on port ${port}`);

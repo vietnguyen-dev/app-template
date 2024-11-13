@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import "./App.css";
+import DataGrid from "./components/DataGrid";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-interface iStuff {
+export interface iStuff {
   id: number;
   stuff: string;
   date_created: Date;
@@ -13,6 +13,8 @@ interface iStuff {
 
 function App() {
   const [data, setData] = useState<iStuff[] | []>([]);
+  const [newStuff, setNewStuff] = useState<string>("");
+  const [editStuff, setEditStuff] = useState<string>("");
 
   useEffect(() => {
     async function fetchData() {
@@ -28,109 +30,124 @@ function App() {
     fetchData();
   }, []);
 
-  const DataGrid: React.FC<{ stuff: iStuff[] }> = ({ stuff }) => {
-    return (
-      <table className="table">
-        <thead className="bg-base-200">
-          <tr>
-            <th>id</th>
-            <th>Name</th>
-            <th className="w-1/12"></th>
-            <th className="w-1/12"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {stuff.map((thing: iStuff) => (
-            <tr
-              key={thing.id}
-              className={`${thing.id % 2 === 0 && "bg-base-200"}`}
-            >
-              <td>{thing.id}</td>
-              <td>{thing.stuff}</td>
-              <td>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    if (document) {
-                      (
-                        document.getElementById("my_modal_1") as HTMLFormElement
-                      ).showModal();
-                    }
-                  }}
-                >
-                  edit
-                </button>
-                <dialog id="my_modal_1" className="modal">
-                  <div className="modal-box">
-                    <h3 className="font-bold text-lg">Hello!</h3>
-                    <p className="py-4">
-                      Press ESC key or click the button below to close
-                    </p>
-                    <div className="modal-action">
-                      <form method="dialog">
-                        {/* if there is a button in form, it will close the modal */}
-                        <button className="btn">Close</button>
-                      </form>
-                    </div>
-                  </div>
-                </dialog>
-              </td>
-              <td>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    console.log("hi");
-                  }}
-                >
-                  delete
-                </button>
-                <dialog id="my_modal_2" className="modal">
-                  <div className="modal-box">
-                    <h3 className="font-bold text-lg">Hello!</h3>
-                    <p className="py-4">
-                      Press ESC key or click the button below to close
-                    </p>
-                    <div className="modal-action">
-                      <form method="dialog">
-                        {/* if there is a button in form, it will close the modal */}
-                        <button className="btn">Close</button>
-                      </form>
-                    </div>
-                  </div>
-                </dialog>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
+  async function fetchData() {
+    try {
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      setData(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const handleNewChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewStuff(e.target.value);
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditStuff(e.target.value);
+  };
+
+  const postData = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const stuff = {
+      stuff: newStuff,
+    };
+    try {
+      await fetch(apiUrl, {
+        method: "POST", // Method type
+        headers: {
+          "Content-Type": "application/json", // Content type for JSON payload
+        },
+        body: JSON.stringify(stuff),
+      });
+      await fetchData();
+      if (document) {
+        (document.getElementById("add-modal") as HTMLFormElement).close();
+      }
+      setNewStuff("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const putData = async () => {};
+
+  const deleteData = async (id: number) => {
+    try {
+      const response = await fetch(`${apiUrl}?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        console.log(`Data with ID ${id} was successfully deleted.`);
+        if (document) {
+          (
+            document.getElementById(`delete-modal-${id}`) as HTMLFormElement
+          ).close();
+        }
+        await fetchData(); // Refetch data after deletion
+      } else {
+        console.error("Failed to delete the data.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
-    <div className="m-4 bg-red-400">
-      <button
-        className="btn ml-4"
-        onClick={() => {
-          if (document) {
-            (
-              document.getElementById("my_modal_3") as HTMLFormElement
-            ).showModal();
-          }
-        }}
-      >
-        New Stuff
-      </button>
-      <dialog id="my_modal_3" className="modal">
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">Hello!</h3>
-          <p className="py-4">Press ESC key or click outside to close</p>
+    <div className="flex justify-center">
+      <div className="flex flex-col w-[90%] my-3">
+        <button
+          className="btn btn-neutral shadow-2xl mb-3 ml-auto"
+          onClick={() => {
+            if (document) {
+              (
+                document.getElementById("add-modal") as HTMLFormElement
+              ).showModal();
+            }
+          }}
+        >
+          New Stuff
+        </button>
+        <dialog id="add-modal" className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg mb-3">Add new stuff!</h3>
+            <form
+              className="flex flex-col items-start gap-3"
+              onSubmit={postData}
+            >
+              <input
+                type="text"
+                placeholder="new stuff text here..."
+                className="input input-bordered w-full max-w-xs"
+                value={newStuff}
+                onChange={handleNewChange}
+              />
+              <button className="btn btn-primary" type="submit">
+                Add
+              </button>
+            </form>
+            <p className="py-4 mt-3">Press ESC key or click outside to close</p>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
+        <div className="overflow-x-auto shadow-2xl rounded-lg">
+          {data.length > 0 && (
+            <DataGrid
+              stuff={data}
+              editStuff={editStuff}
+              handleEditChange={handleEditChange}
+              setEditStuff={setEditStuff}
+              deleteStuff={deleteData}
+            />
+          )}
         </div>
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
-      <div className="m-4 overflow-x-auto border border-black rounded-lg bg-gray-50">
-        {data.length > 0 && <DataGrid stuff={data} />}
       </div>
     </div>
   );

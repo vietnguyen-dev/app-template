@@ -71,7 +71,31 @@ function App() {
     }
   };
 
-  const putData = async () => {};
+  const putData = async (e: React.FormEvent<HTMLFormElement>, id: number) => {
+    const stuff = {
+      id: id,
+      stuff: editStuff,
+    };
+    e.preventDefault();
+    try {
+      const res = await fetch(apiUrl, {
+        method: "PUT", // Method type
+        headers: {
+          "Content-Type": "application/json", // Content type for JSON payload
+        },
+        body: JSON.stringify(stuff),
+      });
+      await fetchData();
+      if (document) {
+        (
+          document.getElementById(`edit-modal-${id}`) as HTMLFormElement
+        ).close();
+      }
+      setNewStuff("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const deleteData = async (id: number) => {
     try {
@@ -144,6 +168,7 @@ function App() {
               editStuff={editStuff}
               handleEditChange={handleEditChange}
               setEditStuff={setEditStuff}
+              putData={putData}
               deleteStuff={deleteData}
             />
           )}

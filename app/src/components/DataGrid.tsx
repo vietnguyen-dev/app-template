@@ -6,11 +6,19 @@ interface iDataGridProps {
   editStuff: string;
   setEditStuff: (stuff: string) => void;
   handleEditChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  putData: (e: React.FormEvent<HTMLFormElement>, id: number) => void;
   deleteStuff: (id: number) => void;
 }
 
 const DataGrid: React.FC<iDataGridProps> = React.memo(
-  ({ stuff, editStuff, setEditStuff, handleEditChange, deleteStuff }) => {
+  ({
+    stuff,
+    editStuff,
+    setEditStuff,
+    handleEditChange,
+    putData,
+    deleteStuff,
+  }) => {
     return (
       <table className="table">
         <thead>
@@ -48,7 +56,10 @@ const DataGrid: React.FC<iDataGridProps> = React.memo(
                 <dialog id={`edit-modal-${thing.id}`} className="modal">
                   <div className="modal-box">
                     <h3 className="font-bold text-lg mb-3">Edit stuff!</h3>
-                    <form className="flex flex-col items-start gap-3">
+                    <form
+                      className="flex flex-col items-start gap-3"
+                      onSubmit={(e) => putData(e, thing.id)}
+                    >
                       <input
                         type="text"
                         placeholder="edit stuff text here..."

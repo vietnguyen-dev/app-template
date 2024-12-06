@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     #port # on computer is interacting with port # in container
     ports:
-      - "${APP_PORT}:${APP_PORT}"  
+      - "${APP_PORT}:${APP_PORT}"
     environment:
       - VITE_API_URL=${VITE_API_URL} # Connects to the server service at /server
     depends_on:
@@ -15,16 +15,22 @@ services:
       - ./app:/app
     networks:
       - app-network
-  
+
   # server service (Node Express)
   server:
     build:
-     context: ./server
-     dockerfile: Dockerfile
+      context: ./server
+      dockerfile: Dockerfile
     ports:
-      - "${PORT}:${PORT}"  # Exposing port 8080 for the server
+      - "${PORT}:${PORT}" # Exposing port 8080 for the server
     environment:
       - PORT=${PORT}
+      - PG_USER=${PG_USER}
+      - PG_PASS=${PG_PASS}
+      - PG_DB=${PG_DB}
+      - PG_HOST=db
+      - PG_PORT=${PG_PORT}
+      - ORIGIN=${ORIGIN}
     volumes:
       - ./server:/server
     networks:
@@ -32,14 +38,14 @@ services:
 
   # Use the official Postgres image
   db:
-    image: postgres:13  
+    image: postgres:13
     environment:
-      POSTGRES_USER: "${PG_USER}"      # Username for the DB
-      POSTGRES_PASSWORD: "${PG_PASS}"  # Password for the DB
-      POSTGRES_DB: "${PG_DB}"    # Database name to create
+      POSTGRES_USER: "${PG_USER}" # Username for the DB
+      POSTGRES_PASSWORD: "${PG_PASS}" # Password for the DB
+      POSTGRES_DB: "${PG_DB}" # Database name to create
     volumes:
-      - pg_data:/var/lib/postgresql/data  # Volume for persisting DB data
-      - ./dbo:/docker-entrypoint-initdb.d 
+      - pg_data:/var/lib/postgresql/data # Volume for persisting DB data
+      - ./dbo:/docker-entrypoint-initdb.d
     networks:
       - app-network
     ports:
@@ -50,4 +56,4 @@ networks:
     driver: bridge
 
 volumes:
-  pg_data:  # Named volume to persist PostgreSQL data
+  pg_data: # Named volume to persist PostgreSQL data

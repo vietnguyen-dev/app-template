@@ -7,8 +7,7 @@ const stuffRouter = express.Router();
 
 stuffRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const query =
-      "SELECT * FROM vw_stuff WHERE date_deleted IS NULL ORDER BY id ASC;";
+    const query = "SELECT * FROM vw_stuff;";
     const { rows } = await db.query(query);
     res.status(200).send(rows);
   } catch (err) {

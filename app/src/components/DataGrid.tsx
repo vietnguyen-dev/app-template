@@ -31,10 +31,7 @@ const DataGrid: React.FC<iDataGridProps> = React.memo(
         </thead>
         <tbody>
           {stuff.map((thing: iStuff, index: number) => (
-            <tr
-              key={thing.id}
-              className={`${index % 2 === 0 && "bg-base-200"}`}
-            >
+            <tr key={thing.id} className={index % 2 === 0 ? "bg-base-200" : ""}>
               <td>{thing.id}</td>
               <td>{thing.stuff}</td>
               <td>
